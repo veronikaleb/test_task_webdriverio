@@ -1,0 +1,25 @@
+Test Case ID: 10
+Test Case Title: Add all 6 products to cart and then remove them
+Test Case Objective: Verify adding all 6 products to the cart and then removing them
+
+Precondition:
+- User is logged in
+- User is on the inventory page (https://www.saucedemo.com/inventory.html)
+
+Steps:
+
+1. Navigate to the login page (https://www.saucedemo.com/) and log in
+   Data: Username: standard_user, Password: secret_sauce
+   Expected result: User is logged in, inventory page is displayed
+
+2. Click the "Add to cart" button for each of the 6 products
+   Expected result: All 6 products are added to the cart, cart icon shows "6"
+
+3. Click on the cart icon
+   Expected result: Cart page is opened
+
+4. Click the "Remove" button next to each of the 6 products
+   Expected result: All 6 products are removed from the cart, cart icon disappears or shows "0"
+
+5. Verify the cart is empty
+   Expected result: Cart is empty, no products are displayed in the cart page
