@@ -1,5 +1,3 @@
-// 📁 test/specs/sorting.e2e.js
-
 describe('Test Case 6 – Sorting', () => {
   before(async () => {
     await browser.url('https://www.saucedemo.com');

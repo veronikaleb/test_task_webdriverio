@@ -1,23 +1,14 @@
-describe('Additional task 10. Add all 6 products to cart and then remove them', () => {
-    before(async () => {
-        await browser.url('https://www.saucedemo.com/');
-        await $('#user-name').setValue('standard_user');
-        await $('#password').setValue('secret_sauce');
-        await $('#login-button').click();
+const loginAsStandardUser = require('../pageobjects/login.helper');
 
-        // Перевірка URL вручну
-        const currentUrl = await browser.getUrl();
-        if (!currentUrl.includes('/inventory.html')) {
-            throw new Error(`Expected URL to contain '/inventory.html' but got ${currentUrl}`);
-        }
+describe('Test Case 10 – Add all 6 products to cart and then remove them', () => {
+
+    before(async () => {
+        await loginAsStandardUser();
     });
 
     it('should add all 6 products to the cart', async () => {
         const addButtons = await $$('button.btn_primary.btn_inventory');
-
-        if (addButtons.length !== 6) {
-            throw new Error(`Expected 6 add to cart buttons, but found ${addButtons.length}`);
-        }
+        expect(addButtons.length).toBe(6);
 
         for (const btn of addButtons) {
             await btn.click();
@@ -31,10 +22,7 @@ describe('Additional task 10. Add all 6 products to cart and then remove them', 
         await $('.shopping_cart_link').click();
 
         const removeButtons = await $$('button.btn_secondary.cart_button');
-
-        if (removeButtons.length !== 6) {
-            throw new Error(`Expected 6 remove buttons in cart, but found ${removeButtons.length}`);
-        }
+        expect(removeButtons.length).toBe(6);
 
         for (const btn of removeButtons) {
             await btn.click();

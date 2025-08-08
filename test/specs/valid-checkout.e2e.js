@@ -1,78 +1,56 @@
+const loginAsStandardUser = require('../pageobjects/login.helper');
+const InventoryPage = require('../pageobjects/inventory.page');
+
 describe('Test Case 8 – Valid Checkout', () => {
-    before(async () => {
-        // Відкрити сайт і авторизуватись
-        await browser.url('https://www.saucedemo.com/');
-        await $('#user-name').setValue('standard_user');
-        await $('#password').setValue('secret_sauce');
-        await $('#login-button').click();
+  it('Steps 1-9: Valid Checkout flow', async () => {
+    // Логінимось через хелпер
+    await loginAsStandardUser();
 
-        // Перевірити, що сторінка інвентарю завантажилась
-        await browser.waitUntil(async () => (await browser.getUrl()).includes('/inventory.html'), {
-            timeout: 5000,
-            timeoutMsg: 'Inventory page did not load'
-        });
-    });
+    // Перевірка, що інвентар відкрився
+    await InventoryPage.waitForInventory();
 
-    it('Steps 1-9: Valid Checkout flow', async () => {
-        // Крок 1: додати перший товар до корзини
-        const firstAddToCartBtn = await $('.inventory_item button'); // перша кнопка "Add to cart"
-        await firstAddToCartBtn.click();
+    // Крок 1: додаємо перший товар у кошик
+    const firstAddToCartBtn = await $('.inventory_item button');
+    await firstAddToCartBtn.click();
 
-        // Перевірити, що лічильник корзини став 1
-        const cartBadge = await $('.shopping_cart_badge');
-        await cartBadge.waitForExist({ timeout: 5000 });
-        const badgeText = await cartBadge.getText();
-        expect(badgeText).toBe('1');
+    const cartBadge = await $('.shopping_cart_badge');
+    await cartBadge.waitForExist({ timeout: 5000 });
+    expect(await cartBadge.getText()).toBe('1');
 
-        // Крок 2: перейти в корзину
-        const cartBtn = await $('.shopping_cart_link');
-        await cartBtn.click();
+    // Крок 2: переходимо у кошик
+    const cartBtn = await $('.shopping_cart_link');
+    await cartBtn.click();
 
-        // Перевірити, що в корзині 1 товар
-        const cartItems = await $$('.cart_item');
-        expect(cartItems.length).toBe(1);
+    const cartItems = await $$('.cart_item');
+    expect(cartItems.length).toBe(1);
 
-        // Крок 3: натиснути Checkout
-        const checkoutBtn = await $('#checkout');
-        await checkoutBtn.click();
+    // Крок 3: Checkout
+    const checkoutBtn = await $('#checkout');
+    await checkoutBtn.click();
 
-        // Чекати форму Checkout
-        await $('#first-name').waitForExist({ timeout: 5000 });
+    await $('#first-name').waitForExist({ timeout: 5000 });
+    await $('#first-name').setValue('Veronika');
+    await $('#last-name').setValue('Lebedovska');
+    await $('#postal-code').setValue('12345');
 
-        // Кроки 4-6: заповнити форму
-        await $('#first-name').setValue('Veronika');
-        await $('#last-name').setValue('Lebedovska');
-        await $('#postal-code').setValue('12345');
+    // Крок 7: Continue
+    await $('#continue').click();
+    await $('.summary_info').waitForExist({ timeout: 5000 });
 
-        // Крок 7: натиснути Continue
-        await $('#continue').click();
+    const overviewItems = await $$('.cart_item');
+    expect(overviewItems.length).toBe(1);
 
-        // Чекати сторінку Overview
-        await $('.summary_info').waitForExist({ timeout: 5000 });
+    // Крок 8: Finish
+    await $('#finish').click();
 
-        // Перевірити, що в Overview є 1 товар
-        const overviewItems = await $$('.cart_item');
-        expect(overviewItems.length).toBe(1);
+    const thankYouMsg = await $('.complete-header');
+    await thankYouMsg.waitForExist({ timeout: 5000 });
+    expect(await thankYouMsg.getText()).toContain('Thank you for your order');
 
-        // Опціонально: перевірити суму (можна парсити ціну)
+    // Крок 9: Back Home
+    await $('#back-to-products').click();
 
-        // Крок 8: натиснути Finish
-        const finishBtn = await $('#finish');
-        await finishBtn.click();
-
-        // Перевірити, що є повідомлення "Thank you for your order!"
-        const thankYouMsg = await $('.complete-header');
-        await thankYouMsg.waitForExist({ timeout: 5000 });
-        expect(await thankYouMsg.getText()).toContain('Thank you for your order');
-
-        // Крок 9: натиснути Back Home
-        const backHomeBtn = await $('#back-to-products');
-        await backHomeBtn.click();
-
-        // Перевірити, що повернулися на сторінку інвентарю
-        expect(await browser.getUrl()).toContain('/inventory.html');
-
-        // Перевірити, що корзина порожня (лічильник не існує)
-        expect(await $('.shopping_cart_badge').isExisting()).toBe(false);
-    });
+    expect(await browser.getUrl()).toContain('/inventory.html');
+    expect(await $('.shopping_cart_badge').isExisting()).toBe(false);
+  });
 });

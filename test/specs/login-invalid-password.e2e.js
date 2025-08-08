@@ -1,34 +1,33 @@
+const LoginPage = require('../pageobjects/login.page');
+
 describe('Login with invalid password', () => {
   it('should show error and highlight fields when logging in with invalid password', async () => {
-    await browser.url('https://www.saucedemo.com');
+    await LoginPage.open();
 
-    const usernameInput = await $('#user-name');
-    const passwordInput = await $('#password');
-    const loginButton = await $('#login-button');
+    await LoginPage.login('standard_user', 'invalid_pass');
 
-    await usernameInput.waitForDisplayed();
-    await passwordInput.waitForDisplayed();
+    // Перевірка, що поле пароля приховує символи
+    const passwordType = await LoginPage.getPasswordFieldType();
+    if (passwordType !== 'password') {
+      throw new Error(`Expected password input type 'password', but got '${passwordType}'`);
+    }
 
-    await usernameInput.setValue('standard_user');
-    await passwordInput.setValue('invalid_pass');
+    // Перевірка тексту помилки
+    const errorText = await LoginPage.getErrorText();
+    if (!errorText.includes('Epic sadface: Username and password do not match any user in this service')) {
+      throw new Error(`Unexpected error message: ${errorText}`);
+    }
 
-    // Перевіримо, що поле для пароля ховає символи
-    const passwordType = await passwordInput.getAttribute('type');
-    expect(passwordType).toBe('password'); // Ось тут була помилка
+    // Перевірка класів інпутів
+    const usernameClass = await LoginPage.getUsernameInputClass();
+    const passwordClass = await LoginPage.getPasswordInputClass();
 
-    await loginButton.click();
-
-    const errorMsg = await $('.error-message-container');
-    await errorMsg.waitForDisplayed();
-
-    const errorText = await errorMsg.getText();
-    expect(errorText).toContain('Epic sadface: Username and password do not match any user in this service');
-
-    // Перевіримо наявність червоної рамки (input-error клас)
-    const usernameClass = await usernameInput.getAttribute('class');
-    const passwordClass = await passwordInput.getAttribute('class');
-
-    expect(usernameClass).toContain('input_error');
-    expect(passwordClass).toContain('input_error');
+    if (!usernameClass.includes('input_error')) {
+      throw new Error(`Username input class does not contain 'input_error': ${usernameClass}`);
+    }
+    if (!passwordClass.includes('input_error')) {
+      throw new Error(`Password input class does not contain 'input_error': ${passwordClass}`);
+    }
   });
 });
+

@@ -1,41 +1,53 @@
-const { $ } = require('@wdio/globals')
+const { $ } = require('@wdio/globals');
 const Page = require('./page');
 
-/**
- * sub page containing specific selectors and methods for a specific page
- */
 class LoginPage extends Page {
-    /**
-     * define selectors using getter methods
-     */
-    get inputUsername () {
-        return $('#username');
-    }
+  get inputUsername() { return $('#user-name'); }
+  get inputPassword() { return $('#password'); }
+  get btnSubmit() { return $('#login-button'); }
+  get errorMsg() { return $('.error-message-container'); }
 
-    get inputPassword () {
-        return $('#password');
-    }
+  async open() {
+    return super.open(''); // Відкриває корінь https://www.saucedemo.com/
+  }
 
-    get btnSubmit () {
-        return $('button[type="submit"]');
-    }
+  async login(username, password) {
+    await this.inputUsername.waitForDisplayed();
+    await this.inputUsername.setValue(username);
+    await this.inputPassword.setValue(password);
+    await this.btnSubmit.click();
+  }
 
-    /**
-     * a method to encapsule automation code to interact with the page
-     * e.g. to login using username and password
-     */
-    async login (username, password) {
-        await this.inputUsername.setValue(username);
-        await this.inputPassword.setValue(password);
-        await this.btnSubmit.click();
-    }
+  async enterCredentials(username, password) {
+    await this.inputUsername.setValue(username);
+    await this.inputPassword.setValue(password);
+  }
 
-    /**
-     * overwrite specific options to adapt it to page object
-     */
-    open () {
-        return super.open('login');
-    }
+  async getPasswordValue() {
+    return this.inputPassword.getValue();
+  }
+
+  async getPasswordFieldType() {
+    return this.inputPassword.getAttribute('type');
+  }
+
+  async getErrorText() {
+    await this.errorMsg.waitForDisplayed();
+    return this.errorMsg.getText();
+  }
+
+  async getUsernameInputClass() {
+    return this.inputUsername.getAttribute('class');
+  }
+
+  async getPasswordInputClass() {
+    return this.inputPassword.getAttribute('class');
+  }
+
+  async clearCredentials() {
+    await this.inputUsername.clearValue();
+    await this.inputPassword.clearValue();
+  }
 }
 
 module.exports = new LoginPage();

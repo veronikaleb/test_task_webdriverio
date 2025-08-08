@@ -1,59 +1,55 @@
+const LoginPage = require('../pageobjects/login.page');
+
 describe('Test Case 7 – Footer Links with Login', () => {
-    before(async () => {
-        await browser.url('https://www.saucedemo.com/');
-        // Авторизація
-        await $('#user-name').setValue('standard_user');
-        await $('#password').setValue('secret_sauce');
-        await $('#login-button').click();
+  before(async () => {
+    await LoginPage.open();
+    await LoginPage.login('standard_user', 'secret_sauce');
 
-        // Чекати поки сторінка інвентарю завантажиться
-        await browser.waitUntil(async () => (await browser.getUrl()).includes('/inventory.html'), {
-            timeout: 5000,
-            timeoutMsg: 'Inventory page did not load'
-        });
+    // Чекати поки сторінка інвентарю завантажиться
+    await browser.waitUntil(
+      async () => (await browser.getUrl()).includes('/inventory.html'), 
+      {
+        timeout: 5000,
+        timeoutMsg: 'Inventory page did not load'
+      }
+    );
+  });
+
+  async function clickAndVerifyNewTab(selector, expectedUrlPart) {
+    const originalHandles = await browser.getWindowHandles();
+
+    const link = await $(selector);
+    await link.waitForExist({ timeout: 5000 });
+    await link.click();
+
+    await browser.waitUntil(async () => {
+      const handles = await browser.getWindowHandles();
+      return handles.length > originalHandles.length;
+    }, {
+      timeout: 5000,
+      timeoutMsg: 'New tab did not open'
     });
 
-    async function clickAndVerifyNewTab(selector, expectedUrlPart) {
-        // Зберігаємо поточні вкладки
-        const originalHandles = await browser.getWindowHandles();
+    const allHandles = await browser.getWindowHandles();
+    const newTabHandle = allHandles.find(handle => !originalHandles.includes(handle));
+    await browser.switchToWindow(newTabHandle);
 
-        // Клікаємо по соцпосиланню
-        const link = await $(selector);
-        await link.waitForExist({ timeout: 5000 });
-        await link.click();
+    const url = await browser.getUrl();
+    expect(url).toContain(expectedUrlPart);
 
-        // Очікуємо появи нової вкладки
-        await browser.waitUntil(async () => {
-            const handles = await browser.getWindowHandles();
-            return handles.length > originalHandles.length;
-        }, {
-            timeout: 5000,
-            timeoutMsg: 'New tab did not open'
-        });
+    await browser.closeWindow();
+    await browser.switchToWindow(originalHandles[0]);
+  }
 
-        // Отримуємо всі вкладки та переходимо в нову
-        const allHandles = await browser.getWindowHandles();
-        const newTabHandle = allHandles.find(handle => !originalHandles.includes(handle));
-        await browser.switchToWindow(newTabHandle);
+  it('Step 1: Twitter (X) opens in new tab', async () => {
+    await clickAndVerifyNewTab('[data-test="social-twitter"]', 'x.com/saucelabs');
+  });
 
-        // Перевіряємо, що url містить очікувану частину
-        const url = await browser.getUrl();
-        expect(url).toContain(expectedUrlPart);
+  it('Step 2: Facebook opens in new tab', async () => {
+    await clickAndVerifyNewTab('[data-test="social-facebook"]', 'facebook.com/saucelabs');
+  });
 
-        // Закриваємо вкладку і повертаємось на основну
-        await browser.closeWindow();
-        await browser.switchToWindow(originalHandles[0]);
-    }
-
-    it('Step 1: Twitter (X) opens in new tab', async () => {
-        await clickAndVerifyNewTab('[data-test="social-twitter"]', 'x.com/saucelabs');
-    });
-
-    it('Step 2: Facebook opens in new tab', async () => {
-        await clickAndVerifyNewTab('[data-test="social-facebook"]', 'facebook.com/saucelabs');
-    });
-
-    it('Step 3: LinkedIn opens in new tab', async () => {
-        await clickAndVerifyNewTab('[data-test="social-linkedin"]', 'linkedin.com/company/sauce-labs');
-    });
+  it('Step 3: LinkedIn opens in new tab', async () => {
+    await clickAndVerifyNewTab('[data-test="social-linkedin"]', 'linkedin.com/company/sauce-labs');
+  });
 });

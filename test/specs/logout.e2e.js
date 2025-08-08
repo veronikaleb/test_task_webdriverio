@@ -1,44 +1,36 @@
-describe('Logout', () => {
+const loginAsStandardUser = require('../pageobjects/login.helper');
+const InventoryPage = require('../pageobjects/inventory.page');
+
+describe('Test Case 4 – Logout', () => {
   it('should log out successfully and return to login page', async () => {
-    // Перехід на сторінку входу
-    await browser.url('https://www.saucedemo.com');
+    await loginAsStandardUser();
 
-    // Авторизація
-    const usernameInput = await $('#user-name');
-    const passwordInput = await $('#password');
-    const loginButton = await $('#login-button');
+    await InventoryPage.waitForInventory();
+    await InventoryPage.openBurgerMenu();
 
-    await usernameInput.setValue('standard_user');
-    await passwordInput.setValue('secret_sauce');
-    await loginButton.click();
+    const menuCount = await InventoryPage.getMenuItemsCount();
+    if (menuCount !== 4) {
+      throw new Error(`Expected 4 menu items, but found ${menuCount}`);
+    }
 
-    // Перевірка, що користувач потрапив на сторінку з товарами
-    const inventoryContainer = await $('#inventory_container');
-    await inventoryContainer.waitForDisplayed();
+    await InventoryPage.logout();
 
-    // Клік по бургер-меню
-    const burgerButton = await $('#react-burger-menu-btn');
-    await burgerButton.waitForClickable();
-    await burgerButton.click();
+    await browser.waitUntil(
+      async () => (await browser.getUrl()) === 'https://www.saucedemo.com/',
+      {
+        timeout: 5000,
+        timeoutMsg: 'Expected to be redirected to login page after logout',
+      }
+    );
 
-    // Очікуємо, що меню з’явиться
-    const menuContainer = await $('.bm-item-list');
-    await menuContainer.waitForDisplayed();
+    const usernameVal = await $('#user-name').getValue();
+    const passwordVal = await $('#password').getValue();
 
-    // Перевіряємо, що меню містить 4 пункти
-    const menuItems = await $$('.bm-item-list a');
-    expect(menuItems.length).toBe(4);
-
-    // Клік по кнопці Logout
-    const logoutLink = await $('#logout_sidebar_link');
-    await logoutLink.waitForClickable();
-    await logoutLink.click();
-
-    // Перевіряємо, що ми повернулись на сторінку логіну
-    await expect(browser).toHaveUrl('https://www.saucedemo.com/');
-
-    // Перевіряємо, що поля логіну порожні
-    expect(await usernameInput.getValue()).toBe('');
-    expect(await passwordInput.getValue()).toBe('');
+    if (usernameVal !== '') {
+      throw new Error(`Expected username input to be empty after logout, but got '${usernameVal}'`);
+    }
+    if (passwordVal !== '') {
+      throw new Error(`Expected password input to be empty after logout, but got '${passwordVal}'`);
+    }
   });
 });
