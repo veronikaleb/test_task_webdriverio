@@ -1,35 +1,15 @@
 # Node modules
 node_modules/
 
-# Логи
-logs
+# Логи WebdriverIO, Selenium та інші логи
 *.log
+wdio-*.log
+selenium-standalone.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Директорії з кешем
-.cache
-.parcel-cache
-
-# Тестові звіти
-coverage/
-reports/
-
-# Тимчасові файли
-*.tmp
-*.temp
-
-# Конфігурації редакторів і ОС
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
 
 # WebdriverIO і Selenium файли
 wdio-*.log
 selenium-standalone.log
 
-# Файли середовища
-.env
-.env.local
