@@ -9,13 +9,9 @@ describe('Test Case 1 – Valid Login', () => {
     await LoginPage.enterCredentials('standard_user', 'secret_sauce');
 
     const passwordValue = await LoginPage.getPasswordValue();
-    if (passwordValue !== 'secret_sauce') {
-      throw new Error(`Expected password value to be 'secret_sauce', but got '${passwordValue}'`);
-    }
+    expect(passwordValue).toBe('secret_sauce');
 
     const passwordType = await LoginPage.getPasswordFieldType();
-    if (passwordType !== 'password') {
-      throw new Error(`Expected password input type to be 'password', but got '${passwordType}'`);
-    }
+    expect(passwordType).toBe('password');
   });
 });

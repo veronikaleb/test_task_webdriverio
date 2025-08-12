@@ -2,8 +2,9 @@ const { $, $$, browser } = require('@wdio/globals');
 const Page = require('./page');
 
 class InventoryPage extends Page {
+  // Елементи сторінки
   get inventoryContainer() { return $('#inventory_container'); }
-  get addToCartButtons() { return $$('.inventory_item button'); }
+  get addToCartButtons() { return $$('.btn_primary.btn_inventory'); }
   get cartBadge() { return $('.shopping_cart_badge'); }
   get cartIcon() { return $('.shopping_cart_link'); }
 
@@ -16,15 +17,16 @@ class InventoryPage extends Page {
   get productPrices() { return $$('div.inventory_item_price'); }
   get productNames() { return $$('div.inventory_item_name'); }
 
+  // Методи
   async open() {
-    return super.open('inventory.html');
+    await super.open('inventory.html');
   }
 
   async waitForInventory() {
     await this.inventoryContainer.waitForDisplayed({ timeout: 5000 });
   }
 
-  async addFirstProductToCart() {
+  async addAllProducts() {
     await browser.waitUntil(async () => {
       const buttons = await this.addToCartButtons;
       return buttons.length > 0;
@@ -34,15 +36,27 @@ class InventoryPage extends Page {
     });
 
     const buttons = await this.addToCartButtons;
-    if (!buttons || buttons.length === 0) {
-      throw new Error('No Add to Cart buttons found');
+    for (const btn of buttons) {
+      await btn.click();
     }
+  }
+
+  async addFirstProductToCart() {
+    const buttons = await this.addToCartButtons;
+    if (buttons.length === 0) throw new Error('No Add to Cart buttons found');
     await buttons[0].click();
   }
 
   async getCartBadgeText() {
-    await this.cartBadge.waitForExist({ timeout: 5000 });
-    return this.cartBadge.getText();
+    if (await this.cartBadge.isExisting()) {
+      return await this.cartBadge.getText();
+    }
+    return null;
+  }
+
+  async getCartBadgeCount() {
+    const text = await this.getCartBadgeText();
+    return text ? parseInt(text, 10) : 0;
   }
 
   async openCart() {
@@ -87,6 +101,10 @@ class InventoryPage extends Page {
       names.push(await el.getText());
     }
     return names;
+  }
+
+  async isCartBadgeExisting() {
+    return this.cartBadge.isExisting();
   }
 }
 

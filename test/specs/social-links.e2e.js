@@ -5,9 +5,8 @@ describe('Test Case 7 – Footer Links with Login', () => {
     await LoginPage.open();
     await LoginPage.login('standard_user', 'secret_sauce');
 
-    // Чекати поки сторінка інвентарю завантажиться
     await browser.waitUntil(
-      async () => (await browser.getUrl()).includes('/inventory.html'), 
+      async () => (await browser.getUrl()).includes('/inventory.html'),
       {
         timeout: 5000,
         timeoutMsg: 'Inventory page did not load'

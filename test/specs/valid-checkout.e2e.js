@@ -1,56 +1,36 @@
 const loginAsStandardUser = require('../pageobjects/login.helper');
 const InventoryPage = require('../pageobjects/inventory.page');
+const CartPage = require('../pageobjects/cart.page');
+const CheckoutPage = require('../pageobjects/checkout.page');
 
 describe('Test Case 8 – Valid Checkout', () => {
   it('Steps 1-9: Valid Checkout flow', async () => {
-    // Логінимось через хелпер
     await loginAsStandardUser();
 
-    // Перевірка, що інвентар відкрився
     await InventoryPage.waitForInventory();
 
-    // Крок 1: додаємо перший товар у кошик
-    const firstAddToCartBtn = await $('.inventory_item button');
-    await firstAddToCartBtn.click();
+    await InventoryPage.addFirstProductToCart();
+    expect(await InventoryPage.getCartBadgeCount()).toBe(1);
 
-    const cartBadge = await $('.shopping_cart_badge');
-    await cartBadge.waitForExist({ timeout: 5000 });
-    expect(await cartBadge.getText()).toBe('1');
+    await InventoryPage.openCart();
+    expect(await CartPage.getCartItemsCount()).toBe(1);
 
-    // Крок 2: переходимо у кошик
-    const cartBtn = await $('.shopping_cart_link');
-    await cartBtn.click();
+    await CartPage.clickCheckout();
 
-    const cartItems = await $$('.cart_item');
-    expect(cartItems.length).toBe(1);
+    await CheckoutPage.fillForm('Veronika', 'Lebedovska', '12345');
+    await CheckoutPage.clickContinue();
 
-    // Крок 3: Checkout
-    const checkoutBtn = await $('#checkout');
-    await checkoutBtn.click();
+    await CheckoutPage.waitSummary();
+    expect(await CheckoutPage.getOverviewItemsCount()).toBe(1);
 
-    await $('#first-name').waitForExist({ timeout: 5000 });
-    await $('#first-name').setValue('Veronika');
-    await $('#last-name').setValue('Lebedovska');
-    await $('#postal-code').setValue('12345');
+    await CheckoutPage.clickFinish();
 
-    // Крок 7: Continue
-    await $('#continue').click();
-    await $('.summary_info').waitForExist({ timeout: 5000 });
+    await CheckoutPage.waitThankYouMessage();
+    expect(await CheckoutPage.getThankYouText()).toContain('Thank you for your order');
 
-    const overviewItems = await $$('.cart_item');
-    expect(overviewItems.length).toBe(1);
-
-    // Крок 8: Finish
-    await $('#finish').click();
-
-    const thankYouMsg = await $('.complete-header');
-    await thankYouMsg.waitForExist({ timeout: 5000 });
-    expect(await thankYouMsg.getText()).toContain('Thank you for your order');
-
-    // Крок 9: Back Home
-    await $('#back-to-products').click();
+    await CheckoutPage.clickBackHome();
 
     expect(await browser.getUrl()).toContain('/inventory.html');
-    expect(await $('.shopping_cart_badge').isExisting()).toBe(false);
+    expect(await InventoryPage.isCartBadgeExisting()).toBe(false);
   });
 });

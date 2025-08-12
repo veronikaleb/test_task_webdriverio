@@ -1,60 +1,36 @@
+const loginAsStandardUser = require('../pageobjects/login.helper');
+const inventoryPage = require('../pageobjects/inventory.page');
+
 describe('Test Case 6 – Sorting', () => {
   before(async () => {
-    await browser.url('https://www.saucedemo.com');
-    await $('#user-name').setValue('standard_user');
-    await $('#password').setValue('secret_sauce');
-    await $('#login-button').click();
-    await $('#inventory_container').waitForDisplayed();
+    await loginAsStandardUser();
+    await inventoryPage.waitForInventory();
   });
 
-  async function getProductPrices() {
-    const priceElements = await $$('div.inventory_item_price');
-    const prices = [];
-    for (const el of priceElements) {
-      const text = await el.getText();
-      prices.push(parseFloat(text.replace('$', '')));
-    }
-    return prices;
-  }
-
-  async function getProductNames() {
-    const nameElements = await $$('div.inventory_item_name');
-    const names = [];
-    for (const el of nameElements) {
-      const text = await el.getText();
-      names.push(text);
-    }
-    return names;
-  }
-
   it('Step 1: Sort by Price (low to high)', async () => {
-    await $('.product_sort_container').selectByVisibleText('Price (low to high)');
-    await browser.pause(500); // невелика пауза для оновлення
-    const actual = await getProductPrices();
+    await inventoryPage.selectSortOption('Price (low to high)');
+    const actual = await inventoryPage.getProductPrices();
     const expected = [...actual].sort((a, b) => a - b);
     expect(actual).toEqual(expected);
   });
 
   it('Step 2: Sort by Price (high to low)', async () => {
-    await $('.product_sort_container').selectByVisibleText('Price (high to low)');
-    await browser.pause(500);
-    const actual = await getProductPrices();
+    await inventoryPage.selectSortOption('Price (high to low)');
+    const actual = await inventoryPage.getProductPrices();
     const expected = [...actual].sort((a, b) => b - a);
     expect(actual).toEqual(expected);
   });
 
   it('Step 3: Sort by Name (A to Z)', async () => {
-    await $('.product_sort_container').selectByVisibleText('Name (A to Z)');
-    await browser.pause(500);
-    const actual = await getProductNames();
+    await inventoryPage.selectSortOption('Name (A to Z)');
+    const actual = await inventoryPage.getProductNames();
     const expected = [...actual].sort((a, b) => a.localeCompare(b));
     expect(actual).toEqual(expected);
   });
 
   it('Step 4: Sort by Name (Z to A)', async () => {
-    await $('.product_sort_container').selectByVisibleText('Name (Z to A)');
-    await browser.pause(500);
-    const actual = await getProductNames();
+    await inventoryPage.selectSortOption('Name (Z to A)');
+    const actual = await inventoryPage.getProductNames();
     const expected = [...actual].sort((a, b) => b.localeCompare(a));
     expect(actual).toEqual(expected);
   });

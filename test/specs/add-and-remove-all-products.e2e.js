@@ -32,3 +32,4 @@ describe('Test Case 10 – Add all 6 products to cart and then remove them', () 
         await expect(cartBadge).not.toBeExisting();
     });
 });
+
