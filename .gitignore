@@ -3,13 +3,9 @@ node_modules/
 
 # Логи WebdriverIO, Selenium та інші логи
 *.log
-wdio-*.log
-selenium-standalone.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# WebdriverIO і Selenium файли
 wdio-*.log
 selenium-standalone.log
 
